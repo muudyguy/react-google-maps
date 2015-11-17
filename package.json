@@ -1,0 +1,23 @@
+{
+  "name": "react-google-maps",
+  "version": "0.0.1",
+  "description": "Google Maps Module For React",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:logicaleak/react-google-maps.git"
+  },
+  "keywords": [
+    "react",
+    "google",
+    "map"
+  ],
+  "author": "ozum safaoglu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/logicaleak/react-google-maps/issues"
+  }
+}
