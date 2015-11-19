@@ -5,7 +5,8 @@ var style = require('./style.js');
 var GoogleMaps = React.createClass({
 	getDefaultProps: function() {
 		return {
-
+			arrows : [],
+			polygons: []
 		};
 	},
 
@@ -16,6 +17,43 @@ var GoogleMaps = React.createClass({
 	},
 
 	getMarkers : function() {
+	},
+
+	createPolygonObjects : function(polygons) {
+		var that = this;
+
+		var googleMapsPolygonObjects = [];
+		polygons.forEach(function(polygon) {
+			// console.log(polygon);
+			googleMapsPolygonObjects.push(new google.maps.Polygon({
+				strokeColor: polygon.color,
+			    strokeOpacity: polygon.strokeOpacity,
+			    strokeWeight: polygon.strokeWeight,
+			    paths: polygon.coordinates,
+			    fillColor: polygon.fillColor,
+			    fillOpacity: polygon.fillOpacity
+			}));
+		});
+		this.googleMapsPolygonObjects = googleMapsPolygonObjects;
+	},
+
+	setMapToPolygons : function(map) {
+		this.googleMapsPolygonObjects.forEach(function(polygon) {
+			polygon.setMap(map);
+		});
+	},
+
+	updatePolygons : function(polygons) {
+		if (this.googleMapsPolygonObjects !== undefined) {
+			this.googleMapsPolygonObjects.forEach(function(polygon) {
+				polygon.setMap(null);
+			});
+			//Create googleMapsArrowObjects again with new props
+			this.createPolygonObjects(polygons);
+			this.setMapToPolygons(this.map);	
+		} else {
+			console.log('google maps not yet ready !');
+		}
 	},
 
 	createArrowObjects : function(arrows) {
@@ -89,6 +127,9 @@ var GoogleMaps = React.createClass({
 	    	that.createArrowObjects(that.props.arrows);
 		    that.setMapToArrows(that.map);
 
+		    that.createPolygonObjects(that.props.polygons);
+		    that.setMapToPolygons(that.map);
+
 
 		});
 	},
@@ -97,15 +138,15 @@ var GoogleMaps = React.createClass({
 		console.log('in component will receive props');
 		console.log(props);
 		this.updateArrows(props.arrows);
+		this.updatePolygons(props.polygons);
 
 	},
 
 	render : function() {
 		var className = this.props.googleMapsClassName;
 
-
 		return (
-			<div style={style} className={className} id={this.props.elId}>
+			<div className={className} id={this.props.elId}>
 
 			</div>
 		);
