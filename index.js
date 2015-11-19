@@ -6,7 +6,8 @@ var GoogleMaps = React.createClass({
 	getDefaultProps: function() {
 		return {
 			arrows : [],
-			polygons: []
+			polygons: [],
+			markers: []
 		};
 	},
 
@@ -14,9 +15,6 @@ var GoogleMaps = React.createClass({
 		return {
 
 		};
-	},
-
-	getMarkers : function() {
 	},
 
 	createMarkerObjects: function(markers) {
