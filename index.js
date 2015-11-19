@@ -19,6 +19,40 @@ var GoogleMaps = React.createClass({
 	getMarkers : function() {
 	},
 
+	createMarkerObjects: function(markers) {
+		var that = this;
+
+		var googleMapsMarkerObjects = [];
+		markers.forEach(function(marker) {
+			googleMapsMarkerObjects.push(new google.maps.Marker({
+				position: marker.coordinates,
+				label: marker.label,
+				map: null
+
+			}));
+		});
+		this.googleMapsMarkerObjects = googleMapsMarkerObjects;
+	},
+
+	setMapToMarkers: function(map) {
+		this.googleMapsMarkerObjects.forEach(function(marker) {
+			marker.setMap(map);
+		});
+	},
+
+	updateMarkers: function(markers) {
+		if (this.googleMapsMarkerObjects !== undefined) {
+			this.googleMapsMarkerObjects.forEach(function(marker) {
+				marker.setMap(null);
+			});
+			//Create googleMapsArrowObjects again with new props
+			this.createMarkerObjects(markers);
+			this.setMapToMarkers(this.map);	
+		} else {
+			console.log('google maps not yet ready !');
+		}
+	},
+
 	createPolygonObjects : function(polygons) {
 		var that = this;
 
@@ -108,7 +142,6 @@ var GoogleMaps = React.createClass({
 	},
 
 	componentDidMount : function() {
-		console.log('in component did mount');
 		var id = this.props.elId;
 		
 		var that = this;
@@ -130,15 +163,18 @@ var GoogleMaps = React.createClass({
 		    that.createPolygonObjects(that.props.polygons);
 		    that.setMapToPolygons(that.map);
 
+		    that.createMarkerObjects(that.props.markers);
+		    that.setMapToMarkers(that.map);
+
 
 		});
 	},
 
 	componentWillReceiveProps : function(props) {
-		console.log('in component will receive props');
 		console.log(props);
 		this.updateArrows(props.arrows);
 		this.updatePolygons(props.polygons);
+		this.updateMarkers(props.markers);
 
 	},
 
