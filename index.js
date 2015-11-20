@@ -47,7 +47,7 @@ var GoogleMaps = React.createClass({
 			this.createMarkerObjects(markers);
 			this.setMapToMarkers(this.map);	
 		} else {
-			console.log('google maps not yet ready !');
+			
 		}
 	},
 
@@ -56,7 +56,7 @@ var GoogleMaps = React.createClass({
 
 		var googleMapsPolygonObjects = [];
 		polygons.forEach(function(polygon) {
-			// console.log(polygon);
+			// 
 			googleMapsPolygonObjects.push(new google.maps.Polygon({
 				strokeColor: polygon.color,
 			    strokeOpacity: polygon.strokeOpacity,
@@ -84,7 +84,7 @@ var GoogleMaps = React.createClass({
 			this.createPolygonObjects(polygons);
 			this.setMapToPolygons(this.map);	
 		} else {
-			console.log('google maps not yet ready !');
+			
 		}
 	},
 
@@ -98,7 +98,7 @@ var GoogleMaps = React.createClass({
 
 		var googleMapsArrowObjects = [];
 		arrows.forEach(function(arrow) {
-			console.log(arrow);	
+			
 			googleMapsArrowObjects.push(new google.maps.Polyline({
 				strokeColor: arrow.color,
 			    strokeOpacity: arrow.strokeOpacity,
@@ -131,7 +131,7 @@ var GoogleMaps = React.createClass({
 			this.createArrowObjects(arrows);
 			this.setMapToArrows(this.map);	
 		} else {
-			console.log('google maps not yet ready !');
+			
 		}
 	},
 
@@ -146,7 +146,7 @@ var GoogleMaps = React.createClass({
 
 		GoogleMapsLoader.load(function(google) {
 			that.google = google;
-			console.log('maps LOAD');
+			
 			var el = document.getElementById(id);
 			var options = {
 				zoom: that.props.zoom,
@@ -154,6 +154,7 @@ var GoogleMaps = React.createClass({
 			    mapTypeControl: that.props.mapTypeControl
 			};
 		    that.map = new google.maps.Map(el, options);
+		    console.log(that.map);
 
 	    	that.createArrowObjects(that.props.arrows);
 		    that.setMapToArrows(that.map);
@@ -169,7 +170,7 @@ var GoogleMaps = React.createClass({
 	},
 
 	componentWillReceiveProps : function(props) {
-		console.log(props);
+		
 		this.updateArrows(props.arrows);
 		this.updatePolygons(props.polygons);
 		this.updateMarkers(props.markers);
