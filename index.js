@@ -1,6 +1,9 @@
 var React = require('react');
 var GoogleMapsLoader = require('google-maps');
 var style = require('./style.js');
+var RichMarkerBuildFunction = require('./rich-markers');
+
+var RichMarker;
 
 var GoogleMaps = React.createClass({
 	getDefaultProps: function() {
@@ -17,9 +20,45 @@ var GoogleMaps = React.createClass({
 		};
 	},
 
-	createMarkerObjects: function(markers) {
+	createRichMarkerObjects: function(richMarkers) {
 		var that = this;
 
+		var googleMapsRichMarkerObjects = [];
+		richMarkers.forEach(function(richMarker) {
+			console.log(richMarker);
+			googleMapsRichMarkerObjects.push(new RichMarker({
+				position: new that.google.maps.LatLng(richMarker.coordinates.lat, richMarker.coordinates.lng),
+				content: richMarker.content
+			}));
+		});
+		this.googleMapsRichMarkerObjects = googleMapsRichMarkerObjects;
+	},
+
+	setMapToRichMarkers: function(map) {
+		this.googleMapsRichMarkerObjects.forEach(function(richMarker) {
+			richMarker.setMap(map);
+		});
+	},
+
+	updateRichMarkers: function(richMarkers) {
+		
+		
+		if (this.googleMapsRichMarkerObjects !== undefined) {
+			
+			
+			this.googleMapsRichMarkerObjects.forEach(function(richMarker) {
+				richMarker.setMap(null);
+			});
+			//Create googleMapsArrowObjects again with new props
+			this.createRichMarkerObjects(richMarkers);
+			this.setMapToRichMarkers(this.map);	
+		} else {
+			
+		}
+	},
+
+	createMarkerObjects: function(markers) {
+		var that = this;
 		var googleMapsMarkerObjects = [];
 		markers.forEach(function(marker) {
 			googleMapsMarkerObjects.push(new google.maps.Marker({
@@ -91,7 +130,6 @@ var GoogleMaps = React.createClass({
 	createArrowObjects : function(arrows) {
 		var that = this;
 
-
 		var arrowSymbol = {
 	    	path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
 	  	};
@@ -146,6 +184,8 @@ var GoogleMaps = React.createClass({
 
 		GoogleMapsLoader.load(function(google) {
 			that.google = google;
+
+			RichMarker = RichMarkerBuildFunction(google);
 			
 			var el = document.getElementById(id);
 			var options = {
@@ -154,26 +194,33 @@ var GoogleMaps = React.createClass({
 			    mapTypeControl: that.props.mapTypeControl
 			};
 		    that.map = new google.maps.Map(el, options);
-		    console.log(that.map);
 
+	    	// Set up arrows
 	    	that.createArrowObjects(that.props.arrows);
 		    that.setMapToArrows(that.map);
 
+		    // Set up Polygons
 		    that.createPolygonObjects(that.props.polygons);
 		    that.setMapToPolygons(that.map);
 
+		    // Set up markers
 		    that.createMarkerObjects(that.props.markers);
 		    that.setMapToMarkers(that.map);
 
-
+	    	// Set up rich Markers
+		    that.createRichMarkerObjects(that.props.richMarkers);
+		    that.setMapToRichMarkers(that.map);
 		});
 	},
 
 	componentWillReceiveProps : function(props) {
+
+		
 		
 		this.updateArrows(props.arrows);
 		this.updatePolygons(props.polygons);
 		this.updateMarkers(props.markers);
+		this.updateRichMarkers(props.richMarkers);
 
 	},
 
