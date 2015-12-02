@@ -25,7 +25,6 @@ var GoogleMaps = React.createClass({
 
 		var googleMapsRichMarkerObjects = [];
 		richMarkers.forEach(function(richMarker) {
-			console.log(richMarker);
 			googleMapsRichMarkerObjects.push(new RichMarker({
 				position: new that.google.maps.LatLng(richMarker.coordinates.lat, richMarker.coordinates.lng),
 				content: richMarker.content
