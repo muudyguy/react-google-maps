@@ -305,7 +305,6 @@ var GoogleMaps = React.createClass({
 			    mapTypeControl: that.props.mapTypeControl
 			};
 		    that.map = new google.maps.Map(el, options);
-            console.log(that.map);
 
 	    	// Set up arrows
 	    	that.createArrowObjects(that.props.arrows);
@@ -332,14 +331,14 @@ var GoogleMaps = React.createClass({
 	},
 
 	componentWillReceiveProps : function(props) {
-
-		
-		
 		this.updateArrows(props.arrows);
 		this.updatePolygons(props.polygons);
 		this.updateMarkers(props.markers);
 		this.updateRichMarkers(props.richMarkers);
-
+        
+        if (props.direction) {
+            this._createAndDrawDriverDirectionAsPolyline(props.direction);
+        }
 	},
 
 	render : function() {
