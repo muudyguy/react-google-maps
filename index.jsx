@@ -2,6 +2,7 @@ var React = require('react');
 var GoogleMapsLoader = require('google-maps');
 var style = require('./style.js');
 var RichMarkerBuildFunction = require('./rich-markers');
+var polyline = require('polyline');
 
 var RichMarker;
 
@@ -10,7 +11,10 @@ var GoogleMaps = React.createClass({
 		return {
 			arrows : [],
 			polygons: [],
-			markers: []
+			markers: [],
+            onDirectionCalculatedPolylineMode: function(){},
+            onClick: function(event) {},
+            onRightClick: function(event) {}
 		};
 	},
 
@@ -40,21 +44,65 @@ var GoogleMaps = React.createClass({
 	},
 
 	updateRichMarkers: function(richMarkers) {
-		
-		
 		if (this.googleMapsRichMarkerObjects !== undefined) {
-			
-			
 			this.googleMapsRichMarkerObjects.forEach(function(richMarker) {
 				richMarker.setMap(null);
 			});
-			//Create googleMapsArrowObjects again with new props
 			this.createRichMarkerObjects(richMarkers);
 			this.setMapToRichMarkers(this.map);	
 		} else {
 			
 		}
 	},
+    
+    _createPolylineObjects: function(customFormatPolylines) {
+        var that = this;
+        
+        var googleMapsPolylineObjects = [];
+        customFormatPolylines.forEach(function(customFormatPolyline) {
+            googleMapsPolylineObjects.push(that._convertPolylineToGoogleFormat(customFormatPolyline));
+        });
+        this.googleMapsPolylineObjects = googleMapsPolylineObjects;
+    },
+    
+    _convertPolylineToGoogleFormat: function(customFormatPolyline) {
+        return new this.google.maps.Polyline({
+            path: customFormatPolyline.path,
+            strokeColor: '#FF0000', //make dynamic later
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+    },
+    
+    _setMapToPolylines: function(map) {
+        this.googleMapsPolylineObjects.forEach(function(polyline) {
+			polyline.setMap(map);
+		});
+    },
+    
+    _updatePolylines: function(polylines) {
+        if (this.googleMapsPolylineObjects !== undefined) {
+			this.googleMapsPolylineObjects.forEach(function(polyline) {
+				polyline.setMap(null);
+			});
+			this._createPolylineObjects(polylines);
+			this._setMapToPolylines(this.map);	
+		} else {
+			
+		}
+    },
+    
+    _addOnePolyline: function(customFormatPolyline) {
+        if (this.googleMapsPolylineObjects !== undefined) {
+            
+        } else {
+            this.googleMapsPolylineObjects = [];
+        }
+        
+        var newGooglePolyline = this._convertPolylineToGoogleFormat(customFormatPolyline);
+        this.googleMapsPolylineObjects.push(newGooglePolyline);
+        newGooglePolyline.setMap(this.map); 
+    },
 
 	createMarkerObjects: function(markers) {
 		var that = this;
@@ -171,19 +219,83 @@ var GoogleMaps = React.createClass({
 			
 		}
 	},
+    
 
 	componentWillMount: function() {
 		
 	},
+    
+    _convertGoogleSentPolylineToCustomFormat(calculatedPolyline) {
+        var customFormatPolyline;
+        var path = [];
+        calculatedPolyline.forEach(function(point) {
+            var lat = point[0];
+            var lng = point[1];
+            var location = {
+                lat: lat,
+                lng: lng
+            };
+            path.push(location);
+            
+        });
+        
+        //todo Add stroke stuff later
+        customFormatPolyline = {
+            path: path
+        }
+        
+        return customFormatPolyline;
+    },
+    
+    _createAndDrawDriverDirectionAsPolyline(direction) {
+        var startPoint = direction.startPoint;
+        var endPoint = direction.endPoint;
+        
+        var startLatLng = new this.google.maps.LatLng(startPoint.lat, startPoint.lng);
+        var endLatLng = new this.google.maps.LatLng(endPoint.lat, endPoint.lng);
+        
+        var request = {
+            origin:startLatLng,
+            destination:endLatLng,
+            travelMode: google.maps.TravelMode.DRIVING
+        };
+        
+        var that = this;
+        this.directionsService.route(request, function(result, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+                // console.log(result);
+                
+                //Polyline of the direction
+                var calculatedPolyline = polyline.decode(result.routes[0].overview_polyline);
+                var customFormatPolyline = that._convertGoogleSentPolylineToCustomFormat(calculatedPolyline);
+                that.props.onDirectionCalculatedPolylineMode(customFormatPolyline);
+                that._addOnePolyline(customFormatPolyline);
+            }
+        });
+    },
+    
+    _registerEvents: function(map) {
+        var that = this;
+        this.google.maps.event.addListener(map, "rightclick", function(event) {
+            that.props.onRightClick(event);
+        });
+        
+        this.google.maps.event.addListener(map, "click", function(event) {
+            that.props.onClick(event);
+        });
+    },
 
 	componentDidMount : function() {
 		var id = this.props.elId;
 		
 		var that = this;
 
+        GoogleMapsLoader.KEY = "AIzaSyDnZYgZODRPgG04QyXN9nrCis1ulZxvv0w";
 		GoogleMapsLoader.load(function(google) {
 			that.google = google;
-
+            that.directionsService = new google.maps.DirectionsService();
+            // that.directionsDisplay = new google.maps.DirectionsRenderer();
+            
 			RichMarker = RichMarkerBuildFunction(google);
 			
 			var el = document.getElementById(id);
@@ -193,6 +305,7 @@ var GoogleMaps = React.createClass({
 			    mapTypeControl: that.props.mapTypeControl
 			};
 		    that.map = new google.maps.Map(el, options);
+            console.log(that.map);
 
 	    	// Set up arrows
 	    	that.createArrowObjects(that.props.arrows);
@@ -209,6 +322,12 @@ var GoogleMaps = React.createClass({
 	    	// Set up rich Markers
 		    that.createRichMarkerObjects(that.props.richMarkers);
 		    that.setMapToRichMarkers(that.map);
+            
+            if (that.props.direction) {
+                that._createAndDrawDriverDirectionAsPolyline(that.props.direction);
+            }
+            
+            that._registerEvents(that.map);
 		});
 	},
 
@@ -225,7 +344,7 @@ var GoogleMaps = React.createClass({
 
 	render : function() {
 		var className = this.props.googleMapsClassName;
-
+        // console.log(this.props.elId);
 		return (
 			<div className={className} id={this.props.elId}>
 
