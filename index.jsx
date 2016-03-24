@@ -324,6 +324,8 @@ var GoogleMaps = React.createClass({
 		    that.setMapToRichMarkers(that.map);
             
             // Set up polylines
+            console.log("polylines in react-map");
+            console.log(that.props.polylines);
             that._createPolylineObjects(that.props.polylines);
             that._setMapToPolylines(that.map);
             
@@ -344,6 +346,7 @@ var GoogleMaps = React.createClass({
 		this.updatePolygons(props.polygons);
 		this.updateMarkers(props.markers);
 		this.updateRichMarkers(props.richMarkers);
+        this._updatePolylines(props.polylines);
         
         if (props.direction) {
             this._createAndDrawDriverDirectionAsPolyline(props.direction);
