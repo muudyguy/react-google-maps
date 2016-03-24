@@ -12,6 +12,7 @@ var GoogleMaps = React.createClass({
 			arrows : [],
 			polygons: [],
 			markers: [],
+            polylines: [],
             onDirectionCalculatedPolylineMode: function(){},
             onClick: function(event) {},
             onRightClick: function(event) {}
@@ -80,12 +81,12 @@ var GoogleMaps = React.createClass({
 		});
     },
     
-    _updatePolylines: function(polylines) {
+    _updatePolylines: function(customFormatPolylines) {
         if (this.googleMapsPolylineObjects !== undefined) {
 			this.googleMapsPolylineObjects.forEach(function(polyline) {
 				polyline.setMap(null);
 			});
-			this._createPolylineObjects(polylines);
+			this._createPolylineObjects(customFormatPolylines);
 			this._setMapToPolylines(this.map);	
 		} else {
 			
@@ -269,7 +270,7 @@ var GoogleMaps = React.createClass({
                 var calculatedPolyline = polyline.decode(result.routes[0].overview_polyline);
                 var customFormatPolyline = that._convertGoogleSentPolylineToCustomFormat(calculatedPolyline);
                 that.props.onDirectionCalculatedPolylineMode(customFormatPolyline);
-                that._addOnePolyline(customFormatPolyline);
+                that._updatePolylines([customFormatPolyline]);
             }
         });
     },
@@ -322,6 +323,10 @@ var GoogleMaps = React.createClass({
 		    that.createRichMarkerObjects(that.props.richMarkers);
 		    that.setMapToRichMarkers(that.map);
             
+            // Set up polylines
+            that._createPolylineObjects(that.props.polylines);
+            that._setMapToPolylines(that.map);
+            
             if (that.props.direction) {
                 that._createAndDrawDriverDirectionAsPolyline(that.props.direction);
             }
@@ -329,6 +334,10 @@ var GoogleMaps = React.createClass({
             that._registerEvents(that.map);
 		});
 	},
+    
+    reset: function() {
+        
+    },
 
 	componentWillReceiveProps : function(props) {
 		this.updateArrows(props.arrows);
