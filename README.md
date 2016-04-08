@@ -5,8 +5,9 @@ This is a google-maps react component that provides simple means to integrate go
 It removes the hustle of initialization and boilerplate code.
 
 ##How to install##
-
+```
 npm install logicaleak-react-google-maps
+```
 
 ##How to use##
 
